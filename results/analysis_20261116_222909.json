@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-11-16T22:29:09",
+  "source": "microphone.wav",
+  "duration_sec": 4.2,
+  "language": "lt",
+  "transcript": "Labas.",
+  "sentiment": "positive",
+  "positive_pct": 40.94,
+  "neutral_pct": 36.63,
+  "negative_pct": 22.43,
+  "whisper_model": "tiny",
+  "sentiment_model": "cardiffnlp/twitter-xlm-roberta-base-sentiment",
+  "device": "cpu"
+}

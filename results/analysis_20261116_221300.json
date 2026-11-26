@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-11-16T22:12:59",
+  "source": "microphone.wav",
+  "duration_sec": 7.56,
+  "language": "en",
+  "transcript": "Hello, my name is Cornelia and my day was awesome!",
+  "sentiment": "positive",
+  "positive_pct": 91.39,
+  "neutral_pct": 7.56,
+  "negative_pct": 1.05,
+  "whisper_model": "small",
+  "sentiment_model": "cardiffnlp/twitter-xlm-roberta-base-sentiment",
+  "device": "cpu"
+}

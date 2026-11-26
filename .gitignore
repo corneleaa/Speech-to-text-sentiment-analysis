@@ -5,3 +5,12 @@ __pycache__/
 *.wav
 *.mp3
 *.m4a
+.idea/
+.Rhistory
+*.zip
+models/huggingface/
+models/*
+!models/.gitkeep
+*.pt
+*.bin
+*.safetensors
