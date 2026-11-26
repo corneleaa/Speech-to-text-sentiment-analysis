@@ -1,19 +1,17 @@
-"""Integration of the modules and a command line interface.
-
-Usage:
-    python main.py path/to/audio.wav --language lt
-"""
 from __future__ import annotations
 
 import argparse
 import logging
 import sys
+import threading
 
 import config
 from modules.audio_input import AudioData, AudioValidationError, load_audio_path
 from modules.sentiment_analysis import SentimentAnalyzer, SentimentError, SentimentResult
 from modules.speech_to_text import SpeechToText, TranscriptionError, TranscriptionResult
-from modules.visualization import build_record, save_results
+from modules.visualization import (
+    build_record, save_results, sentiment_bar_chart,
+)
 
 
 class AnalysisPipeline:
@@ -28,6 +26,31 @@ class AnalysisPipeline:
         self.device = device or config.get_device()
         self.stt = SpeechToText(whisper_model, self.device)
         self.sentiment = SentimentAnalyzer(sentiment_model, self.device)
+
+    def preload(self) -> None:
+        """Load both models now, so the first button press does not wait.
+
+        A failure (e.g. no internet) is only logged; the model is then loaded
+        on first use and the error is shown there.
+        """
+        for name, part in (("Whisper", self.stt), ("sentiment", self.sentiment)):
+            try:
+                with part._lock:
+                    part._ensure_model()
+            except Exception as exc:
+                logging.getLogger(__name__).warning("Preloading %s model failed: %s", name, exc)
+
+    def start_background_load(self) -> None:
+        """Load the models in a background thread so the interface opens immediately.
+
+        A button pressed earlier simply waits for the model it needs (same lock).
+        """
+        self._loader = threading.Thread(target=self.preload, name="model-preload", daemon=True)
+        self._loader.start()
+
+    @property
+    def ready(self) -> bool:
+        return self.stt.ready and self.sentiment.ready
 
     def transcribe(self, audio: AudioData, language: str | None) -> TranscriptionResult:
         return self.stt.transcribe(audio, language)
@@ -87,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
     for label, value in result.scores.items():
         print(f"  {label}: {value:.2f}%")
     if not args.no_save:
-        paths = save_results(record)
+        paths = save_results(record, figure=sentiment_bar_chart(result.scores))
         print("Išsaugota:", ", ".join(str(p) for p in paths.values()))
     return 0
 
