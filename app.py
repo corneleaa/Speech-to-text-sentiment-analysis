@@ -8,11 +8,9 @@ from modules.audio_input import AudioValidationError, load_audio_bytes
 from modules.sentiment_analysis import SentimentError
 from modules.speech_to_text import TranscriptionError
 from modules.visualization import (
-    LABELS_LT, record_to_csv, record_to_json, save_results, sentiment_bar_chart,
-)
+    LABELS_LT, record_to_csv, record_to_json, save_results, sentiment_bar_chart,)
 
-st.set_page_config(page_title="Kalba ir sentimentas", page_icon="🎙️", layout="centered")
-
+st.set_page_config(page_title="Kalba ir sentimentas", layout="centered")
 
 @st.cache_resource(show_spinner=False, max_entries=1)
 def get_pipeline(whisper_model: str, sentiment_model: str) -> AnalysisPipeline:
@@ -21,18 +19,16 @@ def get_pipeline(whisper_model: str, sentiment_model: str) -> AnalysisPipeline:
     pipeline.start_background_load()
     return pipeline
 
-
 @st.fragment(run_every=2)
 def model_status(pipeline: AnalysisPipeline, downloading: bool) -> None:
     """Small status line that refreshes itself until the models are ready."""
     if pipeline.ready:
-        st.caption("✅ Modeliai paruošti")
+        st.caption("Modeliai paruošti")
     elif downloading:
-        st.info("⏳ Modeliai parsisiunčiami ir įkeliami fone (tik pirmą kartą, kelios minutės). "
+        st.info(" Modeliai parsisiunčiami ir įkeliami fone (tik pirmą kartą, kelios minutės). "
                 "Garsą galite įkelti ar įrašyti jau dabar.")
     else:
-        st.info("⏳ Modeliai įkeliami fone. Garsą galite įkelti ar įrašyti jau dabar.")
-
+        st.info("Modeliai įkeliami fone. Garsą galite įkelti ar įrašyti jau dabar.")
 
 def current_audio_source():
     """Return (bytes, filename) of the chosen input, or (None, None)."""
