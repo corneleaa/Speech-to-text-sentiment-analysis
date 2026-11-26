@@ -52,7 +52,9 @@ MIN_AUDIO_SECONDS = 0.3
 MAX_AUDIO_SECONDS = 600
 SILENCE_PEAK_THRESHOLD = 1e-4
 
+
 def _has_snapshot(repo_dir: Path, filenames: tuple[str, ...]) -> bool:
+    """True if a Hugging Face cache folder already holds one of the given weight files."""
     return any(
         (snapshot / name).is_file()
         for snapshot in repo_dir.glob("snapshots/*")
@@ -71,6 +73,7 @@ def sentiment_model_cached(model_id: str) -> bool:
 
 
 def sentiment_safetensors_path(model_id: str) -> Path | None:
+    """A downloaded .safetensors copy of the model, if any (loads faster than pytorch_model.bin)."""
     repo = MODELS_DIR / "huggingface" / "hub" / ("models--" + model_id.replace("/", "--"))
     found = sorted(repo.glob("snapshots/*/model.safetensors"))
     return found[0] if found else None
