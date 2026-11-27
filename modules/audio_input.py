@@ -57,7 +57,7 @@ def _prepare(path: str, source_name: str) -> AudioData:
     duration = samples.size / sample_rate
     if duration < config.MIN_AUDIO_SECONDS:
         raise AudioValidationError(f"Įrašas per trumpas ({duration:.2f} s).")
-    if duration > config.MAX_AUDIO_SECONDS:
+    if config.MAX_AUDIO_SECONDS and duration > config.MAX_AUDIO_SECONDS:
         raise AudioValidationError(
             f"Įrašas per ilgas ({duration:.0f} s). Riba: {config.MAX_AUDIO_SECONDS} s."
         )
