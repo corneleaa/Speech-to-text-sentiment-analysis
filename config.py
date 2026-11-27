@@ -49,7 +49,7 @@ SUPPORTED_LANGUAGE_CODES = ("lt", "en")
 ALLOWED_EXTENSIONS = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".webm")
 TARGET_SAMPLE_RATE = 16_000
 MIN_AUDIO_SECONDS = 0.3
-MAX_AUDIO_SECONDS = 600
+MAX_AUDIO_SECONDS = int(os.getenv("MAX_AUDIO_SECONDS", "0"))  # 0 = be ribos
 SILENCE_PEAK_THRESHOLD = 1e-4
 
 
