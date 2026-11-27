@@ -9,9 +9,7 @@ import config
 from modules.audio_input import AudioData, AudioValidationError, load_audio_path
 from modules.sentiment_analysis import SentimentAnalyzer, SentimentError, SentimentResult
 from modules.speech_to_text import SpeechToText, TranscriptionError, TranscriptionResult
-from modules.visualization import (
-    build_record, save_results, sentiment_bar_chart,
-)
+from modules.visualization import build_record, save_results
 
 
 class AnalysisPipeline:
@@ -110,8 +108,9 @@ def main(argv: list[str] | None = None) -> int:
     for label, value in result.scores.items():
         print(f"  {label}: {value:.2f}%")
     if not args.no_save:
-        paths = save_results(record, figure=sentiment_bar_chart(result.scores))
+        paths = save_results(record)
         print("Išsaugota:", ", ".join(str(p) for p in paths.values()))
+        
     return 0
 
 

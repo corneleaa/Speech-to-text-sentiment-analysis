@@ -21,6 +21,7 @@ _LABEL_ALIASES = {
 
 
 class SentimentError(RuntimeError):
+    pass
 
 
 def normalize_label(raw_label: str) -> str:
@@ -51,6 +52,10 @@ class SentimentAnalyzer:
         self.device = device or config.get_device()
         self._pipe = None
         self._lock = threading.Lock()
+
+    @property
+    def ready(self) -> bool:
+        return self._pipe is not None
 
     def _ensure_model(self) -> None:
         if self._pipe is not None:
