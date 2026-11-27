@@ -7,21 +7,20 @@ from main import AnalysisPipeline
 from modules.audio_input import AudioValidationError, load_audio_bytes
 from modules.sentiment_analysis import SentimentError
 from modules.speech_to_text import TranscriptionError
-from modules.visualization import (
-    LABELS_LT, record_to_csv, record_to_json, save_results, sentiment_bar_chart,)
+from modules.visualization import LABELS_LT, record_to_csv, record_to_json, save_results
 
 st.set_page_config(page_title="Kalba ir sentimentas", layout="centered")
 
+
 @st.cache_resource(show_spinner=False, max_entries=1)
 def get_pipeline(whisper_model: str, sentiment_model: str) -> AnalysisPipeline:
-    """One pipeline per model pair; models load in the background once and stay in memory."""
     pipeline = AnalysisPipeline(whisper_model, sentiment_model)
     pipeline.start_background_load()
     return pipeline
 
+
 @st.fragment(run_every=2)
 def model_status(pipeline: AnalysisPipeline, downloading: bool) -> None:
-    """Small status line that refreshes itself until the models are ready."""
     if pipeline.ready:
         st.caption("Modeliai paruošti")
     elif downloading:
@@ -30,8 +29,8 @@ def model_status(pipeline: AnalysisPipeline, downloading: bool) -> None:
     else:
         st.info("Modeliai įkeliami fone. Garsą galite įkelti ar įrašyti jau dabar.")
 
+
 def current_audio_source():
-    """Return (bytes, filename) of the chosen input, or (None, None)."""
     mode = st.radio("Garso šaltinis", ["Failas", "Mikrofonas"], horizontal=True)
     if mode == "Failas":
         uploaded = st.file_uploader(
@@ -75,7 +74,6 @@ model_status(pipeline, downloading=not _models_on_disk)
 
 audio_bytes, audio_name = current_audio_source()
 
-# 1. Transcription
 if st.button("1. Transkribuoti", disabled=audio_bytes is None, type="primary"):
     try:
         with st.spinner("Atpažįstama kalba..." if pipeline.stt.ready
@@ -102,7 +100,6 @@ if transcription:
         st.warning("Nustatyta kalba nėra lietuvių ar anglų, sentimento rezultatas gali būti netikslus.")
     st.text_area("Tekstą galima pataisyti prieš analizę", key="transcript_text", height=140)
 
-    # 2. Sentiment
     if st.button("2. Analizuoti sentimentą"):
         try:
             with st.spinner("Analizuojamas sentimentas..." if pipeline.sentiment.ready
@@ -114,9 +111,8 @@ if transcription:
                 language=transcription.language,
                 transcript=st.session_state["transcript_text"].strip(), result=result,
             )
-            figure = sentiment_bar_chart(result.scores)
-            paths = save_results(record, figure=figure)
-            st.session_state["sentiment"] = (result, record, figure, paths)
+            paths = save_results(record)
+            st.session_state["sentiment"] = (result, record, paths)
         except SentimentError as exc:
             st.error(str(exc))
         except Exception as exc:
@@ -124,10 +120,9 @@ if transcription:
 
 saved = st.session_state.get("sentiment")
 if saved:
-    result, record, figure, paths = saved
+    result, record, paths = saved
     st.subheader("Rezultatai")
     st.metric("Dominuojantis sentimentas", LABELS_LT[result.label], f"{result.confidence:.1f}%", delta_color="off")
-    st.pyplot(figure)
     st.table({
         "Klasė": [LABELS_LT[k] for k in result.scores],
         "Tikimybė, %": [f"{v:.2f}" for v in result.scores.values()],
