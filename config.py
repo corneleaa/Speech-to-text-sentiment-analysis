@@ -26,7 +26,7 @@ CPU_THREADS = int(os.getenv("CPU_THREADS", min(os.cpu_count() or 4, 8)))
 # Speech-to-Text (faster-whisper model names).
 WHISPER_MODEL_NAME = os.getenv("WHISPER_MODEL", "small")
 WHISPER_COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "int8")  # int8 = fast on CPU
-WHISPER_BEAM_SIZE = 1      # greedy decoding, fastest
+WHISPER_BEAM_SIZE = int(os.getenv("WHISPER_BEAM_SIZE", "1"))  # 5 = geriausia kokybė    
 USE_VAD = True             # skip silence before decoding
 WHISPER_MODEL_CHOICES = ("tiny", "base", "small", "medium", "large-v3")
 
@@ -37,6 +37,7 @@ SENTIMENT_MODELS = {
 }
 DEFAULT_SENTIMENT_MODEL = "multilingual"
 MAX_TEXT_TOKENS = 512
+SENTIMENT_CHUNK_TOKENS = 500
 # Dynamic int8 quantization of the sentiment model: faster on CPU, may change scores slightly.
 # On by default; applies only on CPU. Set QUANTIZE_SENTIMENT=0 for the exact original scores.
 QUANTIZE_SENTIMENT = os.getenv("QUANTIZE_SENTIMENT", "1") == "1"
