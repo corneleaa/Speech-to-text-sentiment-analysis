@@ -88,6 +88,30 @@ class SentimentAnalyzer:
             except Exception as exc:
                 logger.warning("Quantization skipped: %s", exc)
 
+        def _split_text(self, text: str) -> list[tuple[str, int]]:
+        """Split text into pieces the model can read whole: (piece, token count)."""
+        tokenizer = self._pipe.tokenizer
+        ids = tokenizer(text, add_special_tokens=False)["input_ids"]
+        size = config.SENTIMENT_CHUNK_TOKENS
+        if len(ids) <= size:
+            return [(text, max(len(ids), 1))]
+        return [
+            (tokenizer.decode(ids[i:i + size], skip_special_tokens=True), len(ids[i:i + size]))
+            for i in range(0, len(ids), size)
+        ]
+
+    def _classify(self, text: str) -> dict:
+        """Class probabilities (0..1) for one piece of text."""
+        outputs = self._pipe(
+            text, top_k=None, truncation=True, max_length=config.MAX_TEXT_TOKENS
+        )
+        if outputs and isinstance(outputs[0], list):
+            outputs = outputs[0]
+        probs = {label: 0.0 for label in LABELS}
+        for item in outputs:
+            probs[normalize_label(item["label"])] = float(item["score"])
+        return probs
+
     def analyze(self, text: str) -> SentimentResult:
         text = (text or "").strip()
         if not text:
@@ -95,20 +119,18 @@ class SentimentAnalyzer:
         with self._lock:
             self._ensure_model()
             try:
-                outputs = self._pipe(
-                    text,
-                    top_k=None,
-                    truncation=True,
-                    max_length=config.MAX_TEXT_TOKENS,
-                )
+                chunks = self._split_text(text)
+                results = [(self._classify(piece), n) for piece, n in chunks]
+            except SentimentError:
+                raise
             except Exception as exc:
                 raise SentimentError(f"Sentimentų modelio klaida: {exc}") from exc
 
-        if outputs and isinstance(outputs[0], list):
-            outputs = outputs[0]
-
-        scores = {label: 0.0 for label in LABELS}
-        for item in outputs:
-            scores[normalize_label(item["label"])] = round(item["score"] * 100, 2)
+        # Average over the whole text, each chunk weighted by its token count.
+        total = sum(n for _, n in results)
+        scores = {
+            label: round(sum(p[label] * n for p, n in results) / total * 100, 2)
+            for label in LABELS
+        }
         dominant = max(scores, key=scores.get)
         return SentimentResult(dominant, scores, self.model_name)
