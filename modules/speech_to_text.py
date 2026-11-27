@@ -1,8 +1,3 @@
-"""Speech-to-Text module based on faster-whisper (Whisper on CTranslate2).
-
-Runs on CPU with int8 weights by default. The model is loaded once on first use
-and then reused.
-"""
 from __future__ import annotations
 
 import logging
@@ -16,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class TranscriptionError(RuntimeError):
-    """Raised when speech recognition fails or finds no speech."""
+    pass
 
 
 @dataclass
@@ -34,6 +29,10 @@ class SpeechToText:
         self.device = device or config.get_device()
         self._model = None
         self._lock = threading.Lock()
+
+    @property
+    def ready(self) -> bool:
+        return self._model is not None
 
     def _ensure_model(self) -> None:
         if self._model is not None:
@@ -57,7 +56,6 @@ class SpeechToText:
     def transcribe(
         self, audio: AudioData, language: str | None = None
     ) -> TranscriptionResult:
-        """Transcribe audio. language: "lt", "en" or None for auto-detection."""
         if language is not None and language not in config.SUPPORTED_LANGUAGE_CODES:
             raise TranscriptionError(f"Nepalaikoma kalba: {language}")
         with self._lock:
@@ -70,7 +68,6 @@ class SpeechToText:
                     beam_size=config.WHISPER_BEAM_SIZE,
                     vad_filter=config.USE_VAD,
                 )
-                # The generator does the decoding, so it must be consumed here.
                 segments = [
                     {"start": s.start, "end": s.end, "text": s.text.strip()}
                     for s in segment_iter
