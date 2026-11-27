@@ -1,2 +1,0 @@
-﻿timestamp,source,duration_sec,language,transcript,sentiment,positive_pct,neutral_pct,negative_pct,whisper_model,sentiment_model,device
-2026-11-16T22:29:09,microphone.wav,4.2,lt,Labas.,positive,40.94,36.63,22.43,tiny,cardiffnlp/twitter-xlm-roberta-base-sentiment,cpu

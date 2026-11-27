@@ -1,2 +1,0 @@
-﻿timestamp,source,duration_sec,language,transcript,sentiment,positive_pct,neutral_pct,negative_pct,whisper_model,sentiment_model,device
-2026-11-16T22:29:57,microphone.wav,8.7,lt,Turiau šūdina dieną,negative,5.47,6.88,87.65,tiny,cardiffnlp/twitter-xlm-roberta-base-sentiment,cpu
