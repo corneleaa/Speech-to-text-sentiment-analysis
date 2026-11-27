@@ -88,7 +88,7 @@ class SentimentAnalyzer:
             except Exception as exc:
                 logger.warning("Quantization skipped: %s", exc)
 
-        def _split_text(self, text: str) -> list[tuple[str, int]]:
+    def _split_text(self, text: str) -> list[tuple[str, int]]:
         """Split text into pieces the model can read whole: (piece, token count)."""
         tokenizer = self._pipe.tokenizer
         ids = tokenizer(text, add_special_tokens=False)["input_ids"]
